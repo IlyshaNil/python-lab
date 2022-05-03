@@ -4,14 +4,16 @@ import string
 import pprint
 import json
 from bs4 import BeautifulSoup
-from input_format import validate, name_to_list, is_full_name, format_name
+from input_format import validate_input, name_to_list, is_full_name, format_name
+from prettytable import PrettyTable
+from prettytable import ALL
 
 
 def user_input():
     valid = False
     while not valid:
         employer = input("Введите фамилию сотрудника с большой буквы:\n")
-        valid = validate(employer)
+        valid = validate_input(employer)
 
     return employer
 
@@ -56,6 +58,31 @@ def get_articles(name, full_name=False):
         return ditc[user_choose]
 
 
+def create_articles_list(urls_list):
+    t = PrettyTable(['Просмотр', 'Дата выпуска', 'Заглавие', 'Авторы'])
+    t.max_width = 100
+    t.hrules = ALL
+    for url in urls_list:
+        url = url.replace('.', '%2E')
+        r = requests.get(f'https://elib.bsu.by{url}')
+        print(f'https://elib.bsu.by{url}')
+        soup = BeautifulSoup(r.text, features="html.parser")
+        data = []
+        table = soup.find('table', attrs={'class':'table'})
+        
+
+        # table_body = soup.find('tbody')
+        # print(table_body)
+        rows = table.find_all('tr')
+        
+        for row in rows:
+            cols = row.find_all('td')
+            data.append([ele.text for ele in cols if ele])
+            if len(data[-1]) > 0:
+                t.add_row(data[-1])
+       
+    print(t)
+
 def main():
     employer = user_input()
     if is_full_name(employer):
@@ -63,6 +90,9 @@ def main():
         overlap_urls = get_articles(employer, True)
     else:
         overlap_urls = get_articles(name_to_list(employer)[0], False)
+    print(overlap_urls)
+    create_articles_list(overlap_urls)
+    
 
 
 if __name__ == "__main__":
