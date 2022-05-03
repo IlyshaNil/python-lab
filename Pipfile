@@ -5,8 +5,11 @@ name = "pypi"
 
 [packages]
 requests = "*"
+beautifulsoup4 = "*"
+grequests = "*"
 
 [dev-packages]
+black = "*"
 
 [requires]
 python_version = "3.10"
